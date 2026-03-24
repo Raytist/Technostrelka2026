@@ -44,7 +44,11 @@ async def yandex_callback(code: str = None, db: Session = Depends(get_db)):
     async with httpx.AsyncClient() as client:
         response = await client.post(token_url, data=data)
         if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get token from Yandex")
+            error_data = response.json() if response.status_code < 500 else {"error": "Internal Yandex Error"}
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Failed to get token from Yandex: {error_data.get('error_description', error_data.get('error', 'Unknown error'))}"
+            )
             
         token_data = response.json()
         access_token = token_data.get("access_token")
