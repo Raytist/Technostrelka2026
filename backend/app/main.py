@@ -3,6 +3,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response
 from app.core.config import settings
 from app.api.api import api_router
+from app.db.database import engine
+from app.db.base_class import Base
+# Import all models to ensure they are registered with Base.metadata
+from app.models.user import Users
+from app.models.yandex_connection import YandexConnections
+from app.models.parsed_receipt import ParsedReceipts
+from app.models.subscription import Subscriptions
+
+# Create tables automatically (failsafe for hackathon)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=settings.PROJECT_NAME)
 

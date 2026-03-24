@@ -10,17 +10,23 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - app-network
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    networks:
+      - app-network
 
   api:
     build: .
@@ -38,6 +44,8 @@ services:
       - redis
     volumes:
       - .:/app
+    networks:
+      - app-network
 
   worker:
     build: .
@@ -54,6 +62,12 @@ services:
       - redis
     volumes:
       - .:/app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:
