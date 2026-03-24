@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta, timezone
 import httpx
-from datetime import datetime, timedelta
 
 from app.db.database import get_db
 from app.models.user import Users
@@ -38,7 +38,8 @@ async def yandex_callback(code: str = None, db: Session = Depends(get_db)):
         "grant_type": "authorization_code",
         "code": code,
         "client_id": settings.YANDEX_CLIENT_ID,
-        "client_secret": settings.YANDEX_CLIENT_SECRET
+        "client_secret": settings.YANDEX_CLIENT_SECRET,
+        "redirect_uri": "http://localhost:8000/api/v1/auth/yandex/callback"
     }
     
     async with httpx.AsyncClient() as client:
@@ -88,14 +89,14 @@ async def yandex_callback(code: str = None, db: Session = Depends(get_db)):
                 email=email,
                 access_token=encrypt_token(access_token),
                 refresh_token=encrypt_token(refresh_token),
-                expires_at=datetime.utcnow() + timedelta(seconds=expires_in)
+                expires_at=datetime.now(timezone.utc) + timedelta(seconds=expires_in)
             )
             db.add(connection)
         else:
             # Update tokens
             connection.access_token = encrypt_token(access_token)
             connection.refresh_token = encrypt_token(refresh_token)
-            connection.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+            connection.expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
             
         db.commit()
         

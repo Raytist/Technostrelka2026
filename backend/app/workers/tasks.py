@@ -18,9 +18,10 @@ try:
 except ImportError:
     pass
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import imaplib
 import email
+import socket
 from email.policy import default
 from dateutil.relativedelta import relativedelta
 
@@ -55,8 +56,16 @@ def mail_fetch_task(user_id: str):
         access_token = decrypt_token(conn.access_token)
         
         try:
+            # Set timeout for socket operations
+            socket.setdefaulttimeout(20)
             mail = imaplib.IMAP4_SSL('imap.yandex.ru')
-            mail.authenticate('XOAUTH2', lambda x: generate_oauth2_string(conn.email, access_token).encode('utf-8'))
+            # Increase reliability of login
+            try:
+                mail.authenticate('XOAUTH2', lambda x: generate_oauth2_string(conn.email, access_token).encode('utf-8'))
+            except imaplib.IMAP4.error as e:
+                print(f"IMAP Auth Error for user {user_id}: {e}")
+                return f"Auth failure: {e}"
+                
             mail.select("INBOX")
             
             # Fetch messages after last_sync_uid. 
@@ -118,7 +127,7 @@ def receipt_parse_task(user_id: str, message_id: str, email_content: str):
                 amount=data['amount'],
                 merchant_name=data['merchant_name'],
                 is_trial=data.get('is_trial', False),
-                receipt_date=datetime.utcnow()
+                receipt_date=datetime.now(timezone.utc)
             )
             db.add(receipt)
             db.commit()
@@ -243,7 +252,8 @@ def firebase_notifier_task():
     """
     db = SessionLocal()
     try:
-        tomorrow = datetime.utcnow() + relativedelta(days=1)
+        now = datetime.now(timezone.utc)
+        tomorrow = now + relativedelta(days=1)
         start_of_tomorrow = tomorrow.replace(hour=0, minute=0, second=0, microsecond=0)
         end_of_tomorrow = tomorrow.replace(hour=23, minute=59, second=59, microsecond=999999)
         

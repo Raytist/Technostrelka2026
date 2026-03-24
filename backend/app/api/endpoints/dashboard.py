@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from decimal import Decimal
 from typing import List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import calendar
 
 from app.db.database import get_db
@@ -80,7 +80,9 @@ def get_monthly_analytics(
     db: Session = Depends(get_db),
     current_user: Users = Depends(get_current_user)
 ):
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
+    current_month = now.month
+    current_year = now.year
     first_day_this_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     last_day_prev_month = first_day_this_month - timedelta(days=1)
     first_day_prev_month = last_day_prev_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -102,6 +104,10 @@ def get_monthly_analytics(
     percent_change = None
     if prev_total > 0:
         percent_change = float(((current_total - prev_total) / prev_total) * 100)
+    elif current_total > 0: # If prev_total was 0 but current_total is > 0, it's an infinite increase
+        percent_change = 100.0 # Or some other indicator for a large increase from zero
+    else: # Both are zero
+        percent_change = 0.0
 
     return MonthlySpendOut(
         total=current_total,
@@ -182,10 +188,9 @@ def get_categories_analytics(
 
     categories_list = []
     for name, data in categories_map.items():
+        percentage = 0.0
         if total_all > 0:
             percentage = float((data["amount"] / total_all) * 100)
-        else:
-            percentage = 0
         
         categories_list.append(CategoryItem(
             name=name,

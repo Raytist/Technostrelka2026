@@ -1,7 +1,7 @@
 from app.db.database import SessionLocal
 from app.models.subscription import Subscriptions
 from app.models.parsed_receipt import ParsedReceipts
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import uuid
 
@@ -23,7 +23,7 @@ def seed():
             {"name": "Spotify", "amount": 169, "status": "active", "cat": "Кино и музыка"},
         ]
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         for s in subs:
             sub = Subscriptions(
                 user_id=USER_ID,

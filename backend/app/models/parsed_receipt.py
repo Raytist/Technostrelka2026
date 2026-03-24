@@ -9,5 +9,5 @@ class ParsedReceipts(Base):
     message_id = Column(String, unique=True, index=True)
     amount = Column(Numeric(12, 2), nullable=False)
     merchant_name = Column(String, index=True)
-    receipt_date = Column(DateTime, nullable=False)
+    receipt_date = Column(DateTime(timezone=True), nullable=False)
     is_trial = Column(Boolean, default=False)
