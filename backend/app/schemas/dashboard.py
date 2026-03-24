@@ -17,3 +17,31 @@ class ParsedReceiptOut(BaseModel):
     
     class Config:
         from_attributes = True
+
+class MonthlySpendOut(BaseModel):
+    total: Decimal
+    currency: str = "₽"
+    percent_change: Optional[float] = None
+
+class MonthlyPoint(BaseModel):
+    month: str
+    total: Decimal
+
+class SpendHistoryOut(BaseModel):
+    history: List[MonthlyPoint]
+
+class CategoryItem(BaseModel):
+    name: str
+    amount: Decimal
+    percentage: float
+    color: str
+
+class TopSubscriptionItem(BaseModel):
+    name: str
+    amount: Decimal
+    period: str = "мес"
+    icon_letter: str
+
+class CategoriesOut(BaseModel):
+    categories: List[CategoryItem]
+    top_subscriptions: List[TopSubscriptionItem]

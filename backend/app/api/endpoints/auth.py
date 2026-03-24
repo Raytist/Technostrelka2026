@@ -16,12 +16,23 @@ router = APIRouter()
 @router.get("/yandex")
 def yandex_login():
     """Redirects to Yandex OAuth authorization page."""
+    if not settings.YANDEX_CLIENT_ID:
+        raise HTTPException(
+            status_code=500, 
+            detail="Yandex Client ID is not configured in .env"
+        )
     redirect_url = f"https://oauth.yandex.ru/authorize?response_type=code&client_id={settings.YANDEX_CLIENT_ID}"
     return RedirectResponse(redirect_url)
 
 @router.get("/yandex/callback")
-async def yandex_callback(code: str, db: Session = Depends(get_db)):
+async def yandex_callback(code: str = None, db: Session = Depends(get_db)):
     """Handles Yandex callback, fetches tokens, and creates internal User/JWT."""
+    if not code:
+        raise HTTPException(
+            status_code=400, 
+            detail="Authorization code is missing. Please start from /api/v1/auth/yandex"
+        )
+    
     token_url = "https://oauth.yandex.ru/token"
     data = {
         "grant_type": "authorization_code",
