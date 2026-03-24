@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Docker volumes (not tracked)
+postgres_data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase credentials (СЕКРЕТ!)
+firebase-credentials.json
+
+# Alembic pyc
+alembic/__pycache__/
+
+# Logs
+*.log
+celerybeat-schedule
