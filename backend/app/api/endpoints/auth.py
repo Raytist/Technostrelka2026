@@ -19,7 +19,7 @@ def yandex_login():
     if not settings.YANDEX_CLIENT_ID:
         raise HTTPException(
             status_code=500, 
-            detail="Yandex Client ID is not configured in .env"
+            detail="Yandex Client ID error"
         )
     redirect_url = f"https://oauth.yandex.ru/authorize?response_type=code&client_id={settings.YANDEX_CLIENT_ID}"
     return RedirectResponse(redirect_url)
@@ -30,7 +30,7 @@ async def yandex_callback(code: str = None, db: Session = Depends(get_db)):
     if not code:
         raise HTTPException(
             status_code=400, 
-            detail="Authorization code is missing. Please start from /api/v1/auth/yandex"
+            detail="Code is missing"
         )
     
     token_url = "https://oauth.yandex.ru/token"
@@ -100,10 +100,15 @@ async def yandex_callback(code: str = None, db: Session = Depends(get_db)):
             
         db.commit()
         
-        # Generate our own internal JWT for the mobile app
         internal_token = create_access_token({"sub": str(connection.user_id)})
         
-        return {"access_token": internal_token, "token_type": "bearer", "email": email}
+        # Redirect to a dedicated success endpoint instead of returning JSON directly
+        target_url = f"/api/v1/auth/token_success?access_token={internal_token}&email={email}"
+        return RedirectResponse(url=target_url)
+
+@router.get("/token_success")
+def token_success(access_token: str, email: str):
+    return {"access_token": access_token, "token_type": "bearer", "email": email}
 
 @router.get("/yandex/status")
 def yandex_status(current_user: Users = Depends(get_current_user), db: Session = Depends(get_db)):

@@ -11,7 +11,6 @@ from app.models.yandex_connection import YandexConnections
 from app.models.parsed_receipt import ParsedReceipts
 from app.models.subscription import Subscriptions
 
-# Create tables automatically (failsafe for hackathon)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=settings.PROJECT_NAME)

@@ -11,14 +11,12 @@ def parse_receipt(email_content: str) -> Optional[Dict[str, Any]]:
     soup = BeautifulSoup(email_content, "html.parser")
     text = soup.get_text(separator=" ", strip=True)
     
-    # 1. Look for Yandex / OFD typical receipt markers
-    # Typical OFD receipt has "Сумма:" or "Итог:" followed by amount
-    # and merchant name somewhere like "ООО РОМАШКА" or inside specific tags.
+    # Ищем стандартные маркеры суммы чека
     
     amount = None
     merchant_name = None
     
-    # Simple regex for amount (e.g., Сумма: 149.00 руб, Итого: 299 ₽)
+    # Сумма (рубли/символы)
     amount_match = re.search(r"(?:Сумма|Итог[о]?|К оплате)\s*[:]?\s*(\d+[\.,]\d{2})\s*(?:руб|₽|rur|rub)", text, re.IGNORECASE)
     if amount_match:
         val = amount_match.group(1).replace(",", ".")
@@ -27,12 +25,12 @@ def parse_receipt(email_content: str) -> Optional[Dict[str, Any]]:
         except:
             pass
             
-    # Simple regex for merchant (ООО "Имя", ИП Фамилия)
+    # Поиск ООО/ИП
     merchant_match = re.search(r"(ООО\s+[\"«][^\"»]+[\"»]|ИП\s+[А-ЯЁ][а-яё]+\s+[А-ЯЁ]\.\s*[А-ЯЁ]\.)", text)
     if merchant_match:
         merchant_name = merchant_match.group(1).replace('«', '"').replace('»', '"')
         
-    # Fallback for known services that might not use strict OOO/IP patterns in email subjects
+    # Проверка по списку сервисов
     if not merchant_name:
         known_services = ["Яндекс.Плюс", "Spotify", "Netflix", "Амедиатека", "Ivi", "Okko", "VK Музыка", "Telegram Premium", "Apple", "Google"]
         for service in known_services:

@@ -44,8 +44,7 @@ def generate_oauth2_string(username, access_token, base64_encode=False):
 @celery_app.task
 def mail_fetch_task(user_id: str):
     """
-    Connects to Yandex IMAP, fetches unseen emails. 
-    Passes email bodies to receipt_parse_task.
+    Connects to Yandex IMAP, fetches unseen emails.
     """
     db = SessionLocal()
     try:
@@ -144,10 +143,7 @@ def receipt_parse_task(user_id: str, message_id: str, email_content: str):
 @celery_app.task
 def subscriptions_matcher_task(user_id: str):
     """
-    Smart Discovery:
-    Looks at ParsedReceipts for this user. 
-    Groups by merchant to form subscriptions, identifies trials.
-    Generates unverified subscriptions to show in the Dashboard Feed.
+    Processing receipts for user.
     """
     db = SessionLocal()
     try:
@@ -246,9 +242,7 @@ def periodic_mail_sync():
 @celery_app.task
 def firebase_notifier_task():
     """
-    Finds all active subscriptions where next_payment_date is tomorrow.
-    Checks if users.push_enabled is true.
-    Sends FCM Push notifications.
+    Sends FCM Push notifications for upcoming payments.
     """
     db = SessionLocal()
     try:
