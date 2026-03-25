@@ -102,13 +102,9 @@ async def yandex_callback(code: str = None, db: Session = Depends(get_db)):
         
         internal_token = create_access_token({"sub": str(connection.user_id)})
         
-        # Redirect to a dedicated success endpoint instead of returning JSON directly
-        target_url = f"/api/v1/auth/token_success?access_token={internal_token}&email={email}"
+        # Редирект в мобильное приложение (Deep Link)
+        target_url = f"{settings.FRONTEND_REDIRECT_URL}?token={internal_token}&email={email}"
         return RedirectResponse(url=target_url)
-
-@router.get("/token_success")
-def token_success(access_token: str, email: str):
-    return {"access_token": access_token, "token_type": "bearer", "email": email}
 
 @router.get("/yandex/status")
 def yandex_status(current_user: Users = Depends(get_current_user), db: Session = Depends(get_db)):
