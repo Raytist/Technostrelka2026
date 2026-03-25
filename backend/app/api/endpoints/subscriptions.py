@@ -94,6 +94,8 @@ def update_subscription(
         sub.periodicity = data.periodicity
     if data.next_payment_date is not None:
         sub.next_payment_date = data.next_payment_date
+    if data.status is not None:
+        sub.status = data.status
         
     db.commit()
     db.refresh(sub)

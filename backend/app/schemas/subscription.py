@@ -14,6 +14,7 @@ class SubscriptionUpdate(BaseModel):
     name: Optional[str] = None
     periodicity: Optional[str] = None
     next_payment_date: Optional[datetime] = None
+    status: Optional[str] = None
 
 class SubscriptionOut(BaseModel):
     id: UUID
